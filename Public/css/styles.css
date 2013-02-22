@@ -1,0 +1,24 @@
+header, footer {
+	background-color: black;
+}
+
+header h1, header a, header a:hover, footer h5  {
+	color: white;
+	text-align: center;
+}
+
+header nav {
+	height: 90px;
+}
+
+header a {
+	display: inline-block;
+	height: 20px;
+	margin: 0 10px;
+	padding-top: 40px;
+}
+
+#main {
+	border: 2px solid red;
+	margin: 50px auto;
+}
