@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head class=<?php echo '"'.implode(' ', $data['html_classes']).'"'; ?>>
+<head class=<?php echo '"'.implode(' ', $html_classes).'"'; ?>>
 	<meta charset="utf-8">
 	<title>Welcome to CodeIgniter</title>
 
@@ -68,8 +68,6 @@
 
 <div id="container">
 	<h1>Welcome to CodeIgniter!</h1>
-
-	<?php var_dump($data); ?>
 
 	<div id="body">
 		<p>The page you are looking at is being generated dynamically by CodeIgniter.</p>
