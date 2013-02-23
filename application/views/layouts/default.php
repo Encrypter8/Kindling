@@ -10,8 +10,10 @@
 		</nav>
 	</div>
 </header>
-
-<?php echo $output; ?>
+<div id="main" class="container_12">
+	<?php echo $output; ?>
+	<?php echo $modules['aside']; ?>
+</div>
 
 <footer>
 	<div class="container_12">

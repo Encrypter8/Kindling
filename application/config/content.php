@@ -12,7 +12,7 @@ $config['minify_css'] = FALSE;
 $config['css_folder'] = 'content/css/';
 // css files to always be used
 $config['css_files'] = array(
-	'1200.min.css',
+	//'1200.min.css',
 	'reset.css',
 	'text.css',
 	'styles.css'
@@ -24,8 +24,8 @@ $config['js_folder'] = 'content/js/';
 $config['js_files'] = array(
 	'jquery-1.9.1.js',
 	'modernizr-2.6.2.js',
-	//'adapt-config.js',
-	//'adapt.min.js'
+	'adapt-config.js',
+	'adapt.min.js'
 	);
 
 $config['img_folder'] = 'content/images/';

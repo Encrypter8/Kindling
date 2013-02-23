@@ -18,21 +18,21 @@ class MY_Controller extends CI_Controller
 	// inline js code to that will be wrapped by document.ready jQuery
 	private $_js_inlines = array();
 
-	// the requested controller
-	protected $controller = '';
-
-	// the requested method
-	protected $method = '';
-
 	// view files, leave off .html
 	private $_layout = '';
 
+	// variable parts of the layout that are determined by the derived class
+	private $_modules = array();
+	private $_module_data = array();
+
 	private $_using_layout = true;
+
 
 	function __construct()
 	{
 		parent::__construct();
 	}
+
 
 	final function _output($output) {
 		// create templating output
@@ -45,15 +45,16 @@ class MY_Controller extends CI_Controller
 				'meta_tags' => $this->_make_meta_tags(),
 				'css_files' => $this->_make_css_tags(),
 				'js_files' => $this->_make_js_tags(),
-				'js_inlines' => $this->_make_js_inline()
+				'js_inlines' => $this->_make_js_inline(),
+				'modules' => $this->_make_modules()
 				);
 			$data = array(
 				'output' => $output,
 				);
 
-			//$data = array_merge($data, $this->_output_data);
+			// may move the inline HTML here, not sure yet
 			$out .= '<!DOCTYPE html>';
-			$out .='<html lang="en" class=' . $this->_make_html_classes() . '>';
+			$out .= '<html lang="en" class=' . $this->_make_html_classes() . '>';
 			$out .= $this->load->view('head', $header_data, TRUE);
 			$out .= $this->load->view($this->config->item('layout_folder') . $this->_layout, $data, TRUE);
 			$out .= '</html>';
@@ -67,15 +68,20 @@ class MY_Controller extends CI_Controller
 		}
 	}
 
+
 	// great to have the browser and browser version as classes on <html> for browser specific css and js
 	private function _make_html_classes()
 	{
 		return $this->agent->browser() . ' ' . $this->agent->browser().$this->agent->version_major();
 	}
 
+	/**
+	 * meta tag methods 
+	*/
+
 	private function _make_meta_tags()
 	{
-		// start with char set, since we should always place this in the HTML
+		// start with mime typ / char set, since we should always place this in the HTML
 		$tags = '<meta content="text/html; charset=' . $this->config->item('charset') . '" http-equiv="Content-Type">';
 
 		// add globals
@@ -92,6 +98,10 @@ class MY_Controller extends CI_Controller
 
 		return $tags;
 	}
+
+	/**
+	 * css file methods 
+	*/
 
 	protected function add_css($file)
 	{
@@ -124,7 +134,10 @@ class MY_Controller extends CI_Controller
 		return '<link href="' . base_url($this->config->item('css_folder') . $file) . '" type="text/css" rel="stylesheet"></link>';;
 	}
 
-	// TODO: change this function do both page only files and global files
+	/**
+	 * js files methods 
+	*/
+	
 	private function _make_js_tags()
 	{
 		$tags = '';
@@ -149,6 +162,10 @@ class MY_Controller extends CI_Controller
 		return '<script src="' . base_url($this->config->item('js_folder') . $file) . '" type="text/javascript"></script>';
 	}
 
+	/**
+	 * Inline JS methods
+	*/
+
 	protected function add_inline_js($js_string)
 	{
 		array_push($_inlines_js, $js_string);
@@ -159,6 +176,9 @@ class MY_Controller extends CI_Controller
 		return '<script type="text/javascript">$(function() { ' . implode('', $this->_js_inlines) . '});</script>';
 	}
 
+	/**
+	 * Title methods
+	*/
 	protected function set_title($title)
 	{
 		$this->_title = $title;
@@ -168,6 +188,36 @@ class MY_Controller extends CI_Controller
 	{
 		$this->_title .= ' - ' . $append;
 	}
+
+	/**
+	 * Module methods
+	 */
+
+	protected function add_module($module, $data = null)
+	{
+		array_push($this->_modules, $module);
+		if (isset($data))
+		{
+			$this->_module_data[$module] = $data;
+		}
+	}
+
+	protected function _make_modules()
+	{
+		$modules = array();
+
+		foreach($this->_modules as $module)
+		{
+			$data = isset($this->_module_data[$module]) ? $this->_module_data[$module] : null;
+			$modules[$module] = $this->load->view($module, $data, TRUE);
+		}
+
+		return $modules;
+	}
+
+	/**
+	 * Layout utility methods
+	 */
 
 	protected function set_layout($layout)
 	{
