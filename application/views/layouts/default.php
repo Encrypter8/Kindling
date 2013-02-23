@@ -11,7 +11,9 @@
 	</div>
 </header>
 <div id="main" class="container_12">
-	<?php echo $output; ?>
+	<div class="grid_7">
+		<?php echo $output; ?>
+	</div>
 	<?php echo $modules['aside']; ?>
 </div>
 

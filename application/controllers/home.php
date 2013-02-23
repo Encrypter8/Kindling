@@ -19,8 +19,11 @@ class Home extends MY_Controller
 	{
 		$data['test'] = "This is a variable";
 		$data['test2'] = "Aside Variable";
+
 		$this->append_title('Home');
 		$this->add_module('aside', $data);
+		
 		$this->load->view('body', $data);
+		$this->load->view('body2');
 	}
 }
