@@ -17,11 +17,13 @@ class Home extends MY_Controller
 	}
 	public function index()
 	{
-		$data['test'] = "This is a variable";
-		$data['test2'] = "Aside Variable";
+		$data['body_var'] = "This is a variable";
+		$data['aside_var'] = "Aside Variable";
 
 		$this->append_title('Home');
 		$this->add_module('aside', $data);
+
+		$this->add_layout_data('datetime', date('F d, Y'));
 		
 		$this->load->view('body', $data);
 		$this->load->view('body2');

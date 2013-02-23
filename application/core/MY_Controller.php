@@ -21,12 +21,13 @@ class MY_Controller extends CI_Controller
 	// view files, leave off .html
 	private $_layout = '';
 
+	private $_using_layout = true;
+
+	private $_layout_data = array();
+
 	// variable parts of the layout that are determined by the derived class
 	private $_modules = array();
 	private $_module_data = array();
-
-	private $_using_layout = true;
-
 
 	function __construct()
 	{
@@ -51,6 +52,8 @@ class MY_Controller extends CI_Controller
 			$data = array(
 				'output' => $output,
 				);
+
+			$data = array_merge($this->_layout_data, $data);
 
 			// may move the inline HTML here, not sure yet
 			$out .= '<!DOCTYPE html>';
@@ -216,12 +219,17 @@ class MY_Controller extends CI_Controller
 	}
 
 	/**
-	 * Layout utility methods
+	 * Layout methods
 	 */
 
 	protected function set_layout($layout)
 	{
 		$this->_layout = $layout;
+	}
+
+	protected function add_layout_data($key, $value)
+	{
+		$this->_layout_data[$key] = $value;
 	}
 
 	protected function set_layout_on()

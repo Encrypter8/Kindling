@@ -2,7 +2,7 @@ header, footer {
 	background-color: black;
 }
 
-header h1, header a, header a:hover, footer h5  {
+header h1, header a, header a:hover, footer h5, header time {
 	color: white;
 	text-align: center;
 }
