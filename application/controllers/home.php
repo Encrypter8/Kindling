@@ -6,13 +6,19 @@
 */
 class Home extends MY_Controller
 {
-	public function __construct()
+	function __construct()
 	{
 		parent::__construct();
-	}
 
+		$this->set_title('Kindling');
+		$this->set_layout('default');
+
+		//$this->set_layout_off();
+	}
 	public function index()
 	{
-		$this->load->view('welcome_message', $this->data);
+		$data['test'] = "This is a variable";
+		$this->append_title('Home');
+		$this->load->view('body', $data);
 	}
 }

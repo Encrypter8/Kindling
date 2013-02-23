@@ -4,7 +4,7 @@ class MY_User_Agent extends CI_User_agent
 {
 	var $version_major = '';
 
-	public function __construct()
+	function __construct()
 	{
 		parent::__construct();
 
