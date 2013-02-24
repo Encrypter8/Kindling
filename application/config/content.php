@@ -12,9 +12,8 @@ $config['minify_css'] = FALSE;
 $config['css_folder'] = 'content/css/';
 // css files to always be used
 $config['css_files'] = array(
-	//'1200.min.css',
-	'reset.css',
-	'text.css',
+	'adapt/1200.min.css',
+	'normalize.css',
 	'styles.css'
 	);
 
@@ -22,10 +21,11 @@ $config['minify_js'] = FALSE;
 $config['js_folder'] = 'content/js/';
 // js files to always be used
 $config['js_files'] = array(
-	'jquery-1.9.1.js',
-	'modernizr-2.6.2.js',
-	'adapt-config.js',
-	'adapt.min.js'
+	'jquery-1.9.1.min.js',
+	//'modernizr-2.6.2.js',
+	'html5shiv.min.js'
+	//'adapt-config.js',
+	//'adapt.min.js'
 	);
 
 $config['img_folder'] = 'content/images/';
@@ -33,7 +33,7 @@ $config['img_folder'] = 'content/images/';
 
 
 /**
- * meta collection
+ * meta tags
  * an array of arrays
  * each set of key values pairs will be the context="content" of a meta tag
  * where key = context, and value = content
@@ -51,7 +51,17 @@ $config['img_folder'] = 'content/images/';
  * <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
  */
 $config['meta_tags'] = array(
-		array('http-equiv' => 'X-UA-Compatible', 'content' => 'IE=Edge,chrome=1'),
+		array('content' => 'text/html; charset=' . 'UTF-8', 'http-equiv' => 'Content-Type'),
+		array('http-equiv' => 'X-UA-Compatible', 'content' => 'IE=Edge'),
 		array('name' => 'keywords', 'content' => 'code, igniter, kindling'),
 		array('name' => 'description', 'content' => 'This is a webpage')
+	);
+
+
+/**
+ * link tags
+ * same deal as with the meta tags
+ */
+$config['link_tags'] = array(
+		array('rel' => 'shortcut icon', 'href' => '', 'type' => 'image/ico')
 	);

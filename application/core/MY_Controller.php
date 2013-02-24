@@ -2,21 +2,29 @@
 
 class MY_Controller extends CI_Controller
 {
-	// data to be sent through to the view
-	public $data = array();
+	const HTML_REGEX = '/http:\/\//';
+	const MIN_REGEX = '/\.min\./';
 
 	// page title
 	private $_title = '';
 
-	// collection of meta data
-	private $_meta = array();
+	private $_base_href = '';
+	private $_base_target = '';
 
-	// file collections to be added to header
+	// collection of meta data
+	private $_meta_tags = array();
+
+	private $_link_tags = array();
+
+	// file collections to be added to header, file extensions needed
 	private $_css_files = array();
 	private $_js_files = array();
 
 	// inline js code to that will be wrapped by document.ready jQuery
 	private $_js_inlines = array();
+
+	// only need one noscript tag for the head
+	private $_noscript_tag = '';
 
 	// view files, leave off .html
 	private $_layout = '';
@@ -29,37 +37,53 @@ class MY_Controller extends CI_Controller
 	private $_modules = array();
 	private $_module_data = array();
 
+	// minify on or off
+	private $_minify = true;
+
 	function __construct()
 	{
 		parent::__construct();
-	}
 
+		if (isset($_GET['minify'])) {
+			if ($_GET['minify'] == 'false')
+			{
+				$this->_minify = false;
+				$this->session->set_userdata(array('minify' => 'false'));
+			}
+			else
+			{
+				$this->_minify = true;
+				$this->session->unset_userdata('minify');
+			}
+		}
+		else
+		{
+			// the session variable minify is only set for when css minification is set to off
+			if ($this->session->userdata('minify') !== false)
+			{
+				$this->_minify = false;
+			}
+		}
+	}
 
 	final function _output($output) {
 		// create templating output
 		$out = '';
 
-		if($this->_using_layout)
+		if ($this->_using_layout)
 		{
-			$header_data = array(
-				'title' => $this->_title,
-				'meta_tags' => $this->_make_meta_tags(),
-				'css_files' => $this->_make_css_tags(),
-				'js_files' => $this->_make_js_tags(),
-				'js_inlines' => $this->_make_js_inline(),
-				'modules' => $this->_make_modules()
-				);
 			$data = array(
 				'output' => $output,
+				'modules' => $this->_make_modules()
 				);
 
 			$data = array_merge($this->_layout_data, $data);
 
 			// may move the inline HTML here, not sure yet
-			$out .= '<!DOCTYPE html>';
-			$out .= '<html lang="en" class=' . $this->_make_html_classes() . '>';
-			$out .= $this->load->view('head', $header_data, TRUE);
-			$out .= $this->load->view($this->config->item('layout_folder') . $this->_layout, $data, TRUE);
+			$out .= '<!DOCTYPE html>' . "\n";
+			$out .= '<html lang="en" class="' . $this->_make_html_classes() . '">' . "\n";
+			$out .= $this->_make_head() . "\n";
+			$out .= $this->load->view($this->config->item('layout_folder') . $this->_layout, $data, TRUE) . "\n";
 			$out .= '</html>';
 
 			echo $out;
@@ -71,40 +95,142 @@ class MY_Controller extends CI_Controller
 		}
 	}
 
+	private function _make_head()
+	{
+		$head = '<head>' . "\n\t";
+		$head .= '<title>' . $this->_title . '</title>' . "\n\t";
+		$head .= $this->_make_base_tag();
+		$head .= $this->_make_meta_tags();
+		$head .= $this->_make_link_tags();
+		$head .= $this->_make_css_tags();
+		$head .= $this->_make_js_tags();
+		$head .= $this->_make_noscript_tag();
+		$head .= '</head>';
+
+		return $head;
+	}
+
 
 	// great to have the browser and browser version as classes on <html> for browser specific css and js
 	private function _make_html_classes()
 	{
-		return $this->agent->browser() . ' ' . $this->agent->browser().$this->agent->version_major();
+		// first remove any spaces from the browser name (list of browsers in config/user_agents.php)
+		$browser = str_replace(' ', '', $this->agent->browser());
+		return $browser . ' ' . $browser.$this->agent->version_major();
+	}
+
+	/**
+	 * base tag methods 
+	 */
+
+	public function base_href($href)
+	{
+		$this->_base_href = $href;
+	}
+
+	public function base_target($target)
+	{
+		$this->_base_target = $target;
+	}
+
+	private function _make_base_tag()
+	{
+		$href = !empty($this->_base_href) ? $this->_base_href : base_url();
+		$target = !empty($this->_base_target) ? ' target="' . $this->_base_target : '';
+		return '<base href="' . $href . '"' . $target . ' />' . "\n\t";
 	}
 
 	/**
 	 * meta tag methods 
-	*/
+	 */
 
+	public function add_meta_tag($meta_tag)
+	{
+		array_push($this->_meta_tags, $meta_tag);
+	}
+
+	// code igniter's helper function 'meta' is too limited
+	// I may move this to a MY_html.php in the helper's folder and just override theirs
 	private function _make_meta_tags()
 	{
 		// start with mime typ / char set, since we should always place this in the HTML
-		$tags = '<meta content="text/html; charset=' . $this->config->item('charset') . '" http-equiv="Content-Type">';
+		$tags = $this->_make_single_meta_tag(array('content' => 'text/html; charset=' . $this->config->item('charset'), 'http-equiv' => 'Content-Type'));
 
+		// we also want to add X-UA-Compatible if browser is IE
+		if ($this->agent->browser() == 'Internet Explorer')
+		{
+			$tags .= $this->_make_single_meta_tag(array('http-equiv' => 'X-UA-Compatible', 'content' => 'IE=Edge'));
+		}
+		
 		// add globals
 		foreach($this->config->item('meta_tags') as $meta)
 		{
-			$tag = '<meta ';
-			foreach ($meta as $context => $content)
-			{
-				$tag .= $context . '="' . $content . '" ';
-			}
-			$tag .= '/>';
-			$tags .= $tag;
+			$tags .= $this->_make_single_meta_tag($meta);
+		}
+
+		// add locals
+		foreach($this->_meta_tags as $meta)
+		{
+			$tags .= $this->_make_single_meta_tag($meta);
 		}
 
 		return $tags;
 	}
 
+	private function _make_single_meta_tag($meta)
+	{
+		$tag = '<meta ';
+		foreach ($meta as $context => $content)
+		{
+			$tag .= $context . '="' . $content . '" ';
+		}
+		$tag .= '/>' . "\n\t";
+		return $tag;
+	}
+
+	/**
+	 * link tag methods
+	 */
+
+	public function add_link_tag($link_tag)
+	{
+		array_push($this->_link_tags, $link_tag);
+	}
+
+	// same bullshit with the link_tag helper function
+	// I may move this to a MY_html.php in the helper's folder and just override theirs
+	private function _make_link_tags()
+	{
+		$tags = '';
+		// add globals
+		foreach($this->config->item('link_tags') as $link)
+		{
+			$tags .= $this->_make_single_link_tag($link);
+		}
+
+		// add locals
+		foreach($this->_link_tags as $link)
+		{
+			$tags .= $this->_make_single_link_tag($link);
+		}
+
+		return $tags;
+	}
+
+	private function _make_single_link_tag($link)
+	{
+		$tag = '<link ';
+		foreach ($link as $context => $content)
+		{
+			$tag .= $context . '="' . $content . '" ';
+		}
+		$tag .= '/>' . "\n\t";
+		return $tag;
+	}
+
 	/**
 	 * css file methods 
-	*/
+	 */
 
 	protected function add_css($file)
 	{
@@ -114,69 +240,163 @@ class MY_Controller extends CI_Controller
 	// TODO: change this function do both page only files and global files
 	private function _make_css_tags()
 	{
-		// TODO: Possibly add css minifier
 		$tags = '';
 
-		// add globals
-		foreach($this->config->item('css_files') as $file)
+		// minify all css files into one long string and encapsilate it in a style tag
+		if ($this->_minify === true)
 		{
-			$tags .= $this->_single_css_tag($file);
-		}
+			$this->load->library('cssmin');
 
-		// add locals
-		foreach($this->_css_files as $file)
+			// add globals
+			foreach($this->config->item('css_files') as $file)
+			{
+				$tags .= $this->_get_css_file_minified($file);
+			}
+
+			// add locals
+			foreach($this->_css_files as $file)
+			{
+				$tags .= $this->_get_css_file_minified($file);
+			}
+		}
+		// else, each css file gets its own tag
+		else
 		{
-			$tags .= $this->_single_css_tag($file);
+			// add globals
+			foreach($this->config->item('css_files') as $file)
+			{
+				$tags .= $this->_make_single_css_tag($file);
+			}
+
+			// add locals
+			foreach($this->_css_files as $file)
+			{
+				$tags .= $this->_make_single_css_tag($file);
+			}
 		}
 
 		return $tags;
 	}
 
-	private function _single_css_tag($file)
+	private function _get_css_file_minified($file)
 	{
-		return '<link href="' . base_url($this->config->item('css_folder') . $file) . '" type="text/css" rel="stylesheet"></link>';;
+		// assume that if '.min.' is found in the file name that the file is already in a minified state
+		// so if '.min.' is not found in the file name, minify it
+		// also, we can't minify non-local files
+		if (preg_match(self::MIN_REGEX, $file) == 0 && preg_match(self::HTML_REGEX, $file) == 0)
+		{
+			return '<style type="text/css">' . $this->cssmin->minify(file_get_contents($this->config->item('css_folder') . $file), false) . '</style>' . "\n\t";
+		}
+		else
+		{
+			return $this->_make_single_css_tag($file);
+		}
+	}
+
+	private function _make_single_css_tag($file)
+	{
+		// if 'http://' does not exist in $file, assume file is local and location in "cs_folder" set in config/content
+		$file = preg_match(self::HTML_REGEX, $file) > 0 ? $file : base_url($this->config->item('css_folder') . $file);
+		return $this->_make_single_link_tag(array('href' => $file, 'type' => 'text/css', 'rel' => 'stylesheet'));
 	}
 
 	/**
 	 * js files methods 
-	*/
+	 */
 	
 	private function _make_js_tags()
 	{
 		$tags = '';
 
-		// add global
-		foreach($this->config->item('js_files') as $file)
+		if ($this->_minify === true)
 		{
-			$tags .= $this->_single_js_tag($file);
+			$this->load->library('jsmin');
+
+			// add global
+			foreach($this->config->item('js_files') as $file)
+			{
+				$tags .= $this->_get_js_file_minified($file);
+			}
+
+			// add local
+			foreach($this->_js_files as $file)
+			{
+				$tags .= $this->_get_js_file_minified($file);
+			}
+		}
+		else
+		{
+			// add global
+			foreach($this->config->item('js_files') as $file)
+			{
+				$tags .= $this->_make_single_js_tag($file);
+			}
+
+			// add local
+			foreach($this->_js_files as $file)
+			{
+				$tags .= $this->_make_single_js_tag($file);
+			}
 		}
 
-		// add local
-		foreach($this->_js_files as $file)
-		{
-			$tags .= $this->_single_js_tag($file);
-		}
+		// add inlines if needed. there should only every be a few lines of code here, so no need to run it through the minifier
+		$tags .= !empty($this->_js_inlines) ? '<script type="text/javascript">$(function() { ' . implode('', $this->_js_inlines) . '});</script>' : '';
 
 		return $tags;
 	}
 
-	private function _single_js_tag($file)
+	private function _get_js_file_minified($file)
 	{
-		return '<script src="' . base_url($this->config->item('js_folder') . $file) . '" type="text/javascript"></script>';
+		// assume that if '.min.' is found in the file name that the file is already in a minified state
+		// so if '.min.' is not found in the file name, minify it
+		// also, we can't minify non-local files
+		if (preg_match(self::MIN_REGEX, $file) == 0 && preg_match(self::HTML_REGEX, $file) == 0)
+		{
+			return '<script type="text/javascript">' . $this->jsmin->minify(file_get_contents($this->config->item('js_folder') . $file)) . '</script>' . "\n\t";
+		}
+		else
+		{
+			return $this->_make_single_js_tag($file);
+		}
+
+		return $file;
+	}
+
+	private function _make_single_js_tag($file)
+	{
+		// if 'http://' does not exist in $file, assume file is local and location in "js_folder" set in config/content
+		$file = preg_match(self::HTML_REGEX, $file) > 0 ? $file : base_url($this->config->item('js_folder') . $file);
+		return '<script src="' . $file . '" type="text/javascript"></script>' . "\n\t";
 	}
 
 	/**
 	 * Inline JS methods
-	*/
+	 */
 
 	protected function add_inline_js($js_string)
 	{
-		array_push($_inlines_js, $js_string);
+		array_push($this->_js_inlines, $js_string);
 	}
 
-	private function _make_js_inline()
+	/**
+	 * no script tag methods
+	 */
+
+	protected function noscript_tag($string)
 	{
-		return '<script type="text/javascript">$(function() { ' . implode('', $this->_js_inlines) . '});</script>';
+		$this->_noscript_tag = $string;
+	}
+
+	private function _make_noscript_tag()
+	{
+		if (!empty($this->_noscript_tag))
+		{
+			return '<noscript>' . $this->_noscript_tag . '</noscript>' . "\n\t";
+		}
+		else
+		{
+			return '';
+		}
 	}
 
 	/**

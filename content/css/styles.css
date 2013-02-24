@@ -11,7 +11,7 @@ header nav {
 	height: 90px;
 }
 
-header a {
+header a, header time {
 	display: inline-block;
 	height: 20px;
 	margin: 0 10px;
