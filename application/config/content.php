@@ -28,7 +28,7 @@ $config['js_files'] = array(
 	//'adapt.min.js'
 	);
 
-$config['img_folder'] = 'content/images/';
+$config['images_folder'] = 'content/images/';
 
 
 
@@ -51,8 +51,6 @@ $config['img_folder'] = 'content/images/';
  * <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
  */
 $config['meta_tags'] = array(
-		array('content' => 'text/html; charset=' . 'UTF-8', 'http-equiv' => 'Content-Type'),
-		array('http-equiv' => 'X-UA-Compatible', 'content' => 'IE=Edge'),
 		array('name' => 'keywords', 'content' => 'code, igniter, kindling'),
 		array('name' => 'description', 'content' => 'This is a webpage')
 	);
@@ -61,7 +59,15 @@ $config['meta_tags'] = array(
 /**
  * link tags
  * same deal as with the meta tags
+ * please note that favicon is done automatically with the 'favicon_link' below
  */
 $config['link_tags'] = array(
-		array('rel' => 'shortcut icon', 'href' => '', 'type' => 'image/ico')
 	);
+
+
+/**
+ * favicon link
+ * name of the favicon image to use on the page
+ * can be a file located in the 'images_folder' or a full http address
+ */
+$config['favicon_link'] = 'favicon.ico';

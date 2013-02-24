@@ -16,6 +16,8 @@ class MY_Controller extends CI_Controller
 
 	private $_link_tags = array();
 
+	private $_favicon = '';
+
 	// file collections to be added to header, file extensions needed
 	private $_css_files = array();
 	private $_js_files = array();
@@ -80,10 +82,10 @@ class MY_Controller extends CI_Controller
 			$data = array_merge($this->_layout_data, $data);
 
 			// may move the inline HTML here, not sure yet
-			$out .= '<!DOCTYPE html>' . "\n";
-			$out .= '<html lang="en" class="' . $this->_make_html_classes() . '">' . "\n";
-			$out .= $this->_make_head() . "\n";
-			$out .= $this->load->view($this->config->item('layout_folder') . $this->_layout, $data, TRUE) . "\n";
+			$out .= '<!DOCTYPE html>';
+			$out .= '<html lang="en" class="' . $this->_make_html_classes() . '">';
+			$out .= $this->_make_head();
+			$out .= $this->load->view($this->config->item('layout_folder') . $this->_layout, $data, TRUE);
 			$out .= '</html>';
 
 			echo $out;
@@ -97,8 +99,8 @@ class MY_Controller extends CI_Controller
 
 	private function _make_head()
 	{
-		$head = '<head>' . "\n\t";
-		$head .= '<title>' . $this->_title . '</title>' . "\n\t";
+		$head = '<head>';
+		$head .= '<title>' . $this->_title . '</title>';
 		$head .= $this->_make_base_tag();
 		$head .= $this->_make_meta_tags();
 		$head .= $this->_make_link_tags();
@@ -137,7 +139,7 @@ class MY_Controller extends CI_Controller
 	{
 		$href = !empty($this->_base_href) ? $this->_base_href : base_url();
 		$target = !empty($this->_base_target) ? ' target="' . $this->_base_target : '';
-		return '<base href="' . $href . '"' . $target . ' />' . "\n\t";
+		return '<base href="' . $href . '"' . $target . ' />';
 	}
 
 	/**
@@ -153,7 +155,7 @@ class MY_Controller extends CI_Controller
 	// I may move this to a MY_html.php in the helper's folder and just override theirs
 	private function _make_meta_tags()
 	{
-		// start with mime typ / char set, since we should always place this in the HTML
+		// start with mime type / char set, since we should always place this in the HTML
 		$tags = $this->_make_single_meta_tag(array('content' => 'text/html; charset=' . $this->config->item('charset'), 'http-equiv' => 'Content-Type'));
 
 		// we also want to add X-UA-Compatible if browser is IE
@@ -184,7 +186,7 @@ class MY_Controller extends CI_Controller
 		{
 			$tag .= $context . '="' . $content . '" ';
 		}
-		$tag .= '/>' . "\n\t";
+		$tag .= '/>';
 		return $tag;
 	}
 
@@ -202,6 +204,22 @@ class MY_Controller extends CI_Controller
 	private function _make_link_tags()
 	{
 		$tags = '';
+
+		// first do favicon link, only if global or local has been set
+		if (!!$this->config->item('favicon_link') || !empty($this->_favicon))
+		{
+			// use local over global
+			$favicon = !empty($this->_favicon) ? $this->_favicon : $this->config->item('favicon_link');
+
+			// check if file is local to server or http address
+			if (preg_match(self::HTML_REGEX, $favicon) == 0)
+			{
+				$favicon = $this->config->item('images_folder') . $favicon;
+			}
+			
+			$tags .= $this->_make_single_link_tag(array('rel' => 'shortcut icon', 'href' => $favicon));
+		}
+
 		// add globals
 		foreach($this->config->item('link_tags') as $link)
 		{
@@ -224,8 +242,13 @@ class MY_Controller extends CI_Controller
 		{
 			$tag .= $context . '="' . $content . '" ';
 		}
-		$tag .= '/>' . "\n\t";
+		$tag .= '/>';
 		return $tag;
+	}
+
+	public function set_favicon($favicon)
+	{
+		$this->_favicon = $favicon;
 	}
 
 	/**
@@ -285,7 +308,7 @@ class MY_Controller extends CI_Controller
 		// also, we can't minify non-local files
 		if (preg_match(self::MIN_REGEX, $file) == 0 && preg_match(self::HTML_REGEX, $file) == 0)
 		{
-			return '<style type="text/css">' . $this->cssmin->minify(file_get_contents($this->config->item('css_folder') . $file), false) . '</style>' . "\n\t";
+			return '<style type="text/css">' . $this->cssmin->minify(file_get_contents($this->config->item('css_folder') . $file), false) . '</style>';
 		}
 		else
 		{
@@ -296,7 +319,7 @@ class MY_Controller extends CI_Controller
 	private function _make_single_css_tag($file)
 	{
 		// if 'http://' does not exist in $file, assume file is local and location in "cs_folder" set in config/content
-		$file = preg_match(self::HTML_REGEX, $file) > 0 ? $file : base_url($this->config->item('css_folder') . $file);
+		$file = preg_match(self::HTML_REGEX, $file) > 0 ? $file : $this->config->item('css_folder') . $file;
 		return $this->_make_single_link_tag(array('href' => $file, 'type' => 'text/css', 'rel' => 'stylesheet'));
 	}
 
@@ -352,7 +375,7 @@ class MY_Controller extends CI_Controller
 		// also, we can't minify non-local files
 		if (preg_match(self::MIN_REGEX, $file) == 0 && preg_match(self::HTML_REGEX, $file) == 0)
 		{
-			return '<script type="text/javascript">' . $this->jsmin->minify(file_get_contents($this->config->item('js_folder') . $file)) . '</script>' . "\n\t";
+			return '<script type="text/javascript">' . $this->jsmin->minify(file_get_contents($this->config->item('js_folder') . $file)) . '</script>';
 		}
 		else
 		{
@@ -365,8 +388,8 @@ class MY_Controller extends CI_Controller
 	private function _make_single_js_tag($file)
 	{
 		// if 'http://' does not exist in $file, assume file is local and location in "js_folder" set in config/content
-		$file = preg_match(self::HTML_REGEX, $file) > 0 ? $file : base_url($this->config->item('js_folder') . $file);
-		return '<script src="' . $file . '" type="text/javascript"></script>' . "\n\t";
+		$file = preg_match(self::HTML_REGEX, $file) > 0 ? $file : $this->config->item('js_folder') . $file;
+		return '<script src="' . $file . '" type="text/javascript"></script>';
 	}
 
 	/**
@@ -391,7 +414,7 @@ class MY_Controller extends CI_Controller
 	{
 		if (!empty($this->_noscript_tag))
 		{
-			return '<noscript>' . $this->_noscript_tag . '</noscript>' . "\n\t";
+			return '<noscript>' . $this->_noscript_tag . '</noscript>';
 		}
 		else
 		{
