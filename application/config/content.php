@@ -6,6 +6,7 @@
  */
 
 $config['layout_folder'] = 'layouts/';
+$config['layout'] = 'default';
 
 
 $config['minify_css'] = FALSE;

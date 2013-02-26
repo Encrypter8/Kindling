@@ -7,7 +7,7 @@
 				<a href="#">About</a>
 				<a href="#">Login</a>
 				<a href="#">Register</a>
-				<time><?php echo $datetime; ?></time>
+				<time><?php //echo $datetime; ?></time>
 			</nav>
 		</div>
 	</header>

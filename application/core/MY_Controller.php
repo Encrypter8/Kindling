@@ -8,6 +8,10 @@ class MY_Controller extends CI_Controller
 	// page title
 	private $_title = '';
 
+	private $_html_classes = array();
+	private $_html_id = '';
+	private $_html_attrs = array();
+
 	private $_base_href = '';
 	private $_base_target = '';
 
@@ -30,9 +34,7 @@ class MY_Controller extends CI_Controller
 
 	// view files, leave off .html
 	private $_layout = '';
-
 	private $_using_layout = true;
-
 	private $_layout_data = array();
 
 	// variable parts of the layout that are determined by the derived class
@@ -112,6 +114,35 @@ class MY_Controller extends CI_Controller
 		return $head;
 	}
 
+	// accepts string or array()
+	protected function add_html_class($class)
+	{
+		// if string, transform into array
+		if (!is_array($class))
+		{
+			$class = array($class);
+		}
+
+		array_push($this->_html_classes, $class);
+	}
+
+	// single string
+	protected function set_html_id($id)
+	{
+		$this->_html_id = $id;
+	}
+
+	// accepts arrays
+	protected function add_html_attrs($attrs)
+	{
+		if (!is_array($attrs))
+		{
+			// do nothing
+			return;
+		}
+
+		array_push($this->_html_attrs, $attrs);
+	}
 
 	// great to have the browser and browser version as classes on <html> for browser specific css and js
 	private function _make_html_classes()
