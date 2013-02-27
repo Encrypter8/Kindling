@@ -9,28 +9,34 @@ $config['layout_folder'] = 'layouts/';
 $config['layout'] = 'default';
 
 
-$config['minify_css'] = FALSE;
 $config['css_folder'] = 'content/css/';
-// css files to always be used
 $config['css_files'] = array(
-	'adapt/1200.min.css',
-	'normalize.css',
-	'styles.css'
+		'adapt/1200.min.css',
+		'normalize.css',
+		'styles.css'
 	);
 
-$config['minify_js'] = FALSE;
 $config['js_folder'] = 'content/js/';
-// js files to always be used
 $config['js_files'] = array(
-	'jquery-1.9.1.min.js',
-	//'modernizr-2.6.2.js',
-	'html5shiv.min.js'
-	//'adapt-config.js',
-	//'adapt.min.js'
+		'jquery-1.9.1.min.js',
+		//'modernizr-2.6.2.js',
+		'html5shiv.min.js'
+		//'adapt-config.js',
+		//'adapt.min.js'
 	);
 
 $config['images_folder'] = 'content/images/';
 
+
+// key is optional if you would like to option for a local override
+$config['html_classes'] = array(
+		'override' => 'me'
+	);
+$config['html_id'] = '';
+$config['html_attrs'] = array(
+		'xml:lang' => 'en',
+		'xmlns' => 'http://www.w3.org/1999/xhtml'
+	);
 
 
 /**
@@ -52,23 +58,15 @@ $config['images_folder'] = 'content/images/';
  * <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
  */
 $config['meta_tags'] = array(
-		array('name' => 'keywords', 'content' => 'code, igniter, kindling'),
-		array('name' => 'description', 'content' => 'This is a webpage')
+		array('name' => 'keywords', 'content' => 'code, igniter, layout'),
+		array('name' => 'description', 'content' => 'This website was made using the Layout Library extention for Codeigniter!')
 	);
-
 
 /**
  * link tags
  * same deal as with the meta tags
- * please note that favicon is done automatically with the 'favicon_link' below
+ * key's in the top level array are optional, and can but used if you want to set an overridable initial value
  */
 $config['link_tags'] = array(
+		'favicon' => array('rel' => 'shortcut icon', 'href' => 'content/images/favicon.ico')
 	);
-
-
-/**
- * favicon link
- * name of the favicon image to use on the page
- * can be a file located in the 'images_folder' or a full http address
- */
-$config['favicon_link'] = 'favicon.ico';

@@ -20,8 +20,6 @@ class MY_Controller extends CI_Controller
 
 	private $_link_tags = array();
 
-	private $_favicon = '';
-
 	// file collections to be added to header, file extensions needed
 	private $_css_files = array();
 	private $_js_files = array();
@@ -235,21 +233,6 @@ class MY_Controller extends CI_Controller
 	private function _make_link_tags()
 	{
 		$tags = '';
-
-		// first do favicon link, only if global or local has been set
-		if (!!$this->config->item('favicon_link') || !empty($this->_favicon))
-		{
-			// use local over global
-			$favicon = !empty($this->_favicon) ? $this->_favicon : $this->config->item('favicon_link');
-
-			// check if file is local to server or http address
-			if (preg_match(self::HTML_REGEX, $favicon) == 0)
-			{
-				$favicon = $this->config->item('images_folder') . $favicon;
-			}
-			
-			$tags .= $this->_make_single_link_tag(array('rel' => 'shortcut icon', 'href' => $favicon));
-		}
 
 		// add globals
 		foreach($this->config->item('link_tags') as $link)

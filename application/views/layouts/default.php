@@ -13,9 +13,10 @@
 	</header>
 	<div id="main" class="container_12">
 		<div class="grid_7">
-			<?php echo $output; ?>
+			<?php echo $content; ?>
 		</div>
 		<?php echo $modules['aside']; ?>
+		<?php //var_dump(is_object($this->config)); ?>
 	</div>
 	<footer>
 		<div class="container_12">
