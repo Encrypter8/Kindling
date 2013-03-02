@@ -58,8 +58,9 @@ $config['html_attrs'] = array(
  * <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
  */
 $config['meta_tags'] = array(
+		array('content' => 'text/html; charset=UTF-8', 'http-equiv' => 'Content-Type'),
 		array('name' => 'keywords', 'content' => 'code, igniter, layout'),
-		array('name' => 'description', 'content' => 'This website was made using the Layout Library extention for Codeigniter!')
+		'description' => array('name' => 'description', 'content' => 'This website was made using the Layout Library extention for Codeigniter!')
 	);
 
 /**

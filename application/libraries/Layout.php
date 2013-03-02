@@ -13,6 +13,8 @@
  */
 class Layout
 {
+	const HTML_REGEX = '/http:\/\//';
+
 	private $_CI;
 
 	private $_layout		= '';
@@ -204,10 +206,8 @@ class Layout
 	private function _render_html_tag()
 	{
 		$html_classes = array_merge($this->_item('html_classes'), $this->_html_classes);
-		$html_classes = array_unique($html_classes);
 		$html_id = !empty($this->_html_id) ? $this->_html_id : $this->_item('html_id');
 		$html_attrs = array_merge($this->_item('html_attrs'), $this->_html_attrs);
-		$html_attrs = array_unique($html_classes);
 
 		$html_tag = '<html ';
 
@@ -215,13 +215,13 @@ class Layout
 		{
 			$html_tag .= 'class="' . implode(' ', $html_classes) . '" ';
 		}
-		if (!empty($this->_html_id))
+		if (!empty($html_id))
 		{
 			$html_tag .= 'id="' . $html_id . '" ';
 		}
-		if (!empty($this->_html_attrs))
+		if (!empty($html_attrs))
 		{
-			foreach($this->_html_attrs as $key => $value)
+			foreach($html_attrs as $key => $value)
 			{
 				$html_tag .= $key .  '="' . $value . '" ';
 			}
@@ -314,11 +314,11 @@ class Layout
 		$head = '<head>';
 		$head .= '<title>' . $this->_title . '</title>';
 		$head .= $this->_render_base_tag();
-		//$head .= $this->_make_meta_tags();
-		//$head .= $this->_make_link_tags();
-		//$head .= $this->_make_css_tags();
-		//$head .= $this->_make_js_tags();
-		//$head .= $this->_make_noscript_tag();
+		$head .= $this->_render_meta_tags();
+		$head .= $this->_render_link_tags();
+		$head .= $this->_render_css_tags();
+		$head .= $this->_render_js_tags();
+		$head .= $this->_render_noscript_tag();
 		$head .= '</head>';
 
 		return $head;
@@ -373,10 +373,255 @@ class Layout
 		return '<base href="' . $href . '"' . $target . ' />';
 	}
 
+	// --------------------------------------------------------------------
+
+	/**
+	 * Add meta tag
+	 *
+	 * @access	public
+	 * @return	self
+	 */
+	public function add_meta_tag($meta_tag)
+	{
+		foreach($meta_tag as $key => $value)
+		{
+			if (is_string($key))
+			{
+				$this->_meta_tags[$key] = $value;
+			}
+			else
+			{
+				$this->_meta_tags[] = $value;
+			}
+		}
+
+		return $this;
+	}
+
+	// --------------------------------------------------------------------
+
+	/**
+	 * Render meta tags
+	 *
+	 * @access	private
+	 * @return	string
+	 */
+	private function _render_meta_tags()
+	{
+		$meta = array_merge($this->_item('meta_tags'), $this->_meta_tags);
+
+		$tags = '';
+
+		foreach ($meta as $value)
+		{
+			$tags .= '<meta ';
+			foreach ($value as $context => $content)
+			{
+				$tags .= $context . '="' . $content . '" ';
+			}
+			$tags .= '/>';
+		}
+
+		return $tags;
+	}
+
+	// --------------------------------------------------------------------
+
+	/**
+	 * Add link tag
+	 *
+	 * @access	public
+	 * @return	self
+	 */
+	public function add_link_tag($link_tag)
+	{
+		foreach($link_tag as $key => $value)
+		{
+			if (is_string($key))
+			{
+				$this->_link_tags[$key] = $value;
+			}
+			else
+			{
+				$this->_link_tags[] = $value;
+			}
+		}
+
+		return $this;
+	}
 
 
+	// --------------------------------------------------------------------
 
+	/**
+	 * Render link tags
+	 *
+	 * @access	private
+	 * @return	string
+	 */
+	private function _render_link_tags()
+	{
+		$link = array_merge($this->_item('link_tags'), $this->_link_tags);
 
+		$tags = '';
+
+		foreach ($link as $value)
+		{
+			$tags .= '<link ';
+			foreach ($value as $context => $content)
+			{
+				$tags .= $context . '="' . $content . '" ';
+			}
+			$tags .= '/>';
+		}
+
+		return $tags;
+	}
+
+	// --------------------------------------------------------------------
+
+	/**
+	 * Add css file
+	 *
+	 * @access	public
+	 * @return	self
+	 */
+	public function add_css_file($file)
+	{
+		if (!is_array($file)) {
+			$file = array($file);
+		}
+		foreach ($file as $key => $value)
+		{
+			if (is_string($key))
+			{
+				$this->_css_files[$key] = $value;
+			}
+			else
+			{
+				$this->_css_files[] = $value;
+			}
+		}
+		return $this;
+	}
+
+	// --------------------------------------------------------------------
+
+	/**
+	 * Render css tags
+	 *
+	 * @access	private
+	 * @return	string
+	 */
+	private function _render_css_tags()
+	{
+		$css = array_merge($this->_item('css_files'), $this->_css_files);
+
+		$tags = '';
+
+		foreach ($css as $value)
+		{
+			$value = preg_match(self::HTML_REGEX, $value) > 0 ? $value : $this->_item('css_folder') . $value;
+			$tags .= '<link href="' . $value . '" type="text/css" rel="stylesheet" />';
+		}
+
+		return $tags;
+	}
+
+	// --------------------------------------------------------------------
+
+	/**
+	 * Add js file
+	 *
+	 * @access	public
+	 * @return	self
+	 */
+	public function add_js_file($file)
+	{
+		if (!is_array($file)) {
+			$file = array($file);
+		}
+		foreach ($file as $key => $value)
+		{
+			if (is_string($key))
+			{
+				$this->_js_files[$key] = $value;
+			}
+			else
+			{
+				$this->_js_files[] = $value;
+			}
+		}
+		return $this;
+	}
+
+	// --------------------------------------------------------------------
+
+	/**
+	 * Add inline js code
+	 *
+	 * @access	public
+	 * @return	self
+	 */
+	public function add_inline_js($js_string)
+	{
+		$this->_js_inlines[] = $js_string;
+
+		return $this;
+	}
+
+	// --------------------------------------------------------------------
+
+	/**
+	 * Render js tags
+	 *
+	 * @access	private
+	 * @return	string
+	 */
+	private function _render_js_tags()
+	{
+		$js = array_merge($this->_item('js_files'), $this->_js_files);
+
+		$tags = '';
+
+		foreach ($js as $value)
+		{
+			$value = preg_match(self::HTML_REGEX, $value) > 0 ? $value : $this->_item('js_folder') . $value;
+			$tags .= '<script src="' . $value . '" type="text/javascript"></script>';
+		}
+
+		$tags .= !empty($this->_js_inlines) ? '<script type="text/javascript">$(function() { ' . implode(' ', $this->_js_inlines) . ' });</script>' : '';
+
+		return $tags;
+	}
+
+	// --------------------------------------------------------------------
+
+	/**
+	 * Set noscript
+	 *
+	 * @access	public
+	 * @return	self
+	 */
+	public function set_noscript($string)
+	{
+		$this->_noscript = $string;
+
+		return $this;
+	}
+
+	// --------------------------------------------------------------------
+
+	/**
+	 * Render noscript tags
+	 *
+	 * @access	private
+	 * @return	string
+	 */
+	private function _render_noscript_tag()
+	{
+		return !empty($this->_noscript) ? '<noscript>' . $this->_noscript . '</noscript>' : '';
+	}
 
 	// --------------------------------------------------------------------
 
