@@ -30,6 +30,10 @@ class Layout
 	private $_html_id		= '';
 	private $_html_attrs	= array();
 
+	private $_body_classes	= array();
+	private $_body_id		= '';
+	private $_body_attrs	= array();
+
 	private $_base_href		= '';
 	private $_base_target	= '';
 
@@ -90,7 +94,11 @@ class Layout
 		$out .= '<!DOCTYPE html>';
 		$out .= $this->_render_html_tag();
 		$out .= $this->_render_head();
+		$out .= $this->_render_body_tag();
 		$out .= $this->_CI->load->view($layout_folder . $layout, $data, TRUE);
+		$out .= $this->_render_js_tags();
+		$out .= $this->_render_noscript_tag();
+		$out .= '</body>';
 		$out .= '</html>';
 
 		return $out;
@@ -209,21 +217,21 @@ class Layout
 		$html_id = !empty($this->_html_id) ? $this->_html_id : $this->_item('html_id');
 		$html_attrs = array_merge($this->_item('html_attrs'), $this->_html_attrs);
 
-		$html_tag = '<html ';
+		$html_tag = '<html';
 
 		if (!empty($html_classes))
 		{
-			$html_tag .= 'class="' . implode(' ', $html_classes) . '" ';
+			$html_tag .= ' class="' . implode(' ', $html_classes) . '" ';
 		}
 		if (!empty($html_id))
 		{
-			$html_tag .= 'id="' . $html_id . '" ';
+			$html_tag .= ' id="' . $html_id . '" ';
 		}
 		if (!empty($html_attrs))
 		{
 			foreach($html_attrs as $key => $value)
 			{
-				$html_tag .= $key .  '="' . $value . '" ';
+				$html_tag .= ' ' . $key .  '="' . $value . '" ';
 			}
 		}
 
@@ -304,6 +312,112 @@ class Layout
 	// --------------------------------------------------------------------
 
 	/**
+	 * Render body tag
+	 *
+	 * @access	private
+	 * @return	string
+	 */
+	private function _render_body_tag()
+	{
+		$body_classes = array_merge($this->_item('body_classes'), $this->_body_classes);
+		$body_id = !empty($this->_body_id) ? $this->_body_id : $this->_item('body_id');
+		$body_attrs = array_merge($this->_item('body_attrs'), $this->_body_attrs);
+
+		$body_tag = '<body';
+
+		if (!empty($html_classes))
+		{
+			$body_tag .= ' class="' . implode(' ', $body_classes) . '" ';
+		}
+		if (!empty($body_id))
+		{
+			$body_tag .= ' id="' . $body_id . '" ';
+		}
+		if (!empty($body_attrs))
+		{
+			foreach($body_attrs as $key => $value)
+			{
+				$body_tag .= ' ' . $key .  '="' . $value . '" ';
+			}
+		}
+
+		return $body_tag .= '>';
+	}
+
+	// --------------------------------------------------------------------
+
+	/**
+	 * Add body tag class
+	 *
+	 * @access	public
+	 * @param	mixed
+	 * @return	self
+	 */
+	public function add_body_class($class)
+	{
+		if (!is_array($class))
+		{
+			$class = array($class);
+		}
+		foreach($class as $key => $value)
+		{
+			if (is_string($key))
+			{
+				$this->_body_classes[$key] = $value;
+			}
+			else
+			{
+				$this->_body_classes[] = $value;
+			}
+		}
+
+		return $this;
+	}
+
+	// --------------------------------------------------------------------
+
+	/**
+	 * Set body tag id attribute
+	 *
+	 * @access	public
+	 * @param	string
+	 * @return	self
+	 */
+	public function set_body_id($id)
+	{
+		$this->_body_id = $id;
+
+		return $this;
+	}
+
+	// --------------------------------------------------------------------
+
+	/**
+	 * Add body tag attributes
+	 *
+	 * @access	public
+	 * @param	mixed
+	 * @return	self
+	 */
+	function add_body_attrs($attrs)
+	{
+		if (is_array($attrs))
+		{
+			foreach($attrs as $key => $value)
+			{
+				if (is_string($key))
+				{
+					$this->_body_attrs[$key] = $value;
+				}
+			}
+		}
+
+		return $this;
+	}
+
+	// --------------------------------------------------------------------
+
+	/**
 	 * Render head tag
 	 *
 	 * @access	private
@@ -317,8 +431,6 @@ class Layout
 		$head .= $this->_render_meta_tags();
 		$head .= $this->_render_link_tags();
 		$head .= $this->_render_css_tags();
-		$head .= $this->_render_js_tags();
-		$head .= $this->_render_noscript_tag();
 		$head .= '</head>';
 
 		return $head;

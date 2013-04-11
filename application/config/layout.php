@@ -38,6 +38,10 @@ $config['html_attrs'] = array(
 		'xmlns' => 'http://www.w3.org/1999/xhtml'
 	);
 
+$config['body_classes'] = array();
+$config['body_id'] = '';
+$config['body_attrs'] = array();
+
 
 /**
  * meta tags

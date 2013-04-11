@@ -14,6 +14,7 @@ class Home extends MY_Controller
 
 		//$this->set_layout_off();
 	}
+	
 	public function index()
 	{
 		$data['body_var'] = "This is a variable";
