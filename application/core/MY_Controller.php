@@ -75,7 +75,7 @@ class MY_Controller extends CI_Controller
 		if ($this->_using_layout)
 		{
 			$data = array(
-				'output' => $output,
+				'content' => $output,
 				'modules' => $this->_make_modules()
 				);
 

@@ -14,9 +14,16 @@ class Test extends CI_Controller
 		$this->layout->add_html_class('me')->set_html_id('site');
 		$this->layout->add_module('aside', $module_data);
 
+		$this->layout->add_js_file('someCustomCode.js');
+
 		$this->layout->add_inline_js("$('h2').css('color', 'red');");
 
 		$content = $this->load->view('body', $data, TRUE);	
 		echo $this->layout->render($content);
+	}
+
+	function api()
+	{
+		return '{success: true}';
 	}
 }

@@ -79,6 +79,7 @@ class Layout
 		// set layout data
 		$data = array(
 				'content' => $content,
+				'data' => $this->_layout_data;
 				'modules' => $this->_render_modules()
 				);
 
